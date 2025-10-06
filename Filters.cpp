@@ -1,6 +1,5 @@
 #include "Filters.h"
-
-
+#include <math.h>
 FilteredValue::FilteredValue() {
   a_lpf1 = 0.075;
   a_lpf2 = 0.025;
@@ -51,5 +50,4 @@ float FilteredValue::getOldXnLPF2() {
 }
 float FilteredValue::getOldYnLPF2() {
   return yn_2_lpf2;
-
 }
