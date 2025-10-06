@@ -1,5 +1,5 @@
 # Filters
-header and cpp files for simples Filters for Arduino
+header and cpp files for simple Filters for Arduino aat RunTime!
 
 #LPF1
 simple Low Pass Filter 1. Order
