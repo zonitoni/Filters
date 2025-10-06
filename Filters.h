@@ -16,7 +16,7 @@ public:
   void doLPF1(bool);
   void doLPF2(bool);
 
-  ~FilteredValue();
+  
 
 private:
   float yn_1_lpf1;
