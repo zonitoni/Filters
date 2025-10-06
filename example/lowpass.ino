@@ -38,8 +38,7 @@ void printDataSerial(float val1, float val2, float val3, float val4, float val5,
   int maxIteration = sizeof(data) / sizeof(float);
   for (int i = 0; i < maxIteration; i++) {
     Serial.print(data[i]);
-    if (i == maxIteration - 1) continue;
+    if (i == maxIteration - 1) Serial.println();
     else Serial.print(",");
-  }
-  Serial.println();
+  }  
 }
