@@ -1,52 +1,121 @@
 #include "Filters.h"
-
+#include <stdlib.h>
 
 FilteredValue::FilteredValue() {
-  a_lpf1 = 0.85;
-  a_hpf1 = 0.85;
-  isActivelpf1 = false;
-  isActivehpf1 = false;
+  a_lpf = 0.85;
+  a_hpf = 0.85;
+  
+  isLPF = false;
+  isHPF = false;
+  isFloatingAverage = false;
+
+  lpf = 0;
+  hpf = 0;
+  floatingAverage = 0;
+
+  yn_1_lpf = 0;
+  bn_1_hpf = 0;
+
+  this->setBufferSize(10);
+  this->setShiftRegisterPointer(NULL);
+  this->setShiftRegisterSum(0);
 }
 void FilteredValue::updateSample(float sample) {
   xn = sample;
-  isActivelpf1? lpf1 = this->LPF1() : lpf1 = FLOAT_MIN;
-  isActivehpf1? hpf1 = this->HPF1() : hpf1 = FLOAT_MIN;
+  isLPF ? lpf = this->LPF() : lpf = FLOAT_MIN;
+  isHPF ? hpf = this->HPF() : hpf = FLOAT_MIN;
+  isFloatingAverage ? floatingAverage = this->FloatingAverage() : floatingAverage = FLOAT_MIN;
 }
-void FilteredValue::setLPF1Constant(float a){
-  a_lpf1 = a;
+void FilteredValue::setLPFConstant(float a) {
+  a_lpf = a;
 }
-void FilteredValue::setHPF1Constant(float val){
-  a_hpf1 = val;
+void FilteredValue::setHPFConstant(float val) {
+  a_hpf = val;
 }
-void FilteredValue::doLPF1(bool isActive){
-  isActivelpf1 = isActive;
+void FilteredValue::doLPF(bool isActive) {
+  isLPF = isActive;
 }
-void FilteredValue::doHPF1(bool isActive){
-  isActivehpf1 = isActive;
+void FilteredValue::doFloatingAverage(bool isActive) {
+  isFloatingAverage = isActive;
+  if (isFloatingAverage) {
+    float* ptr = (float*)malloc(this->getBufferSize() * sizeof(float));
+    setShiftRegisterPointer(ptr);
+    initShiftRegister();
+  }
 }
-float FilteredValue::LPF1() {
-  float yn = (1-a_lpf1) * xn + (a_lpf1) * this->getOldValueLPF1();
-  this->setOldValueLPF1(yn);
+float FilteredValue::FloatingAverage() {
+  //add new Value at first location
+  resetShiftRegisterSum();
+  for (int i = this->getBufferSize() - 1; i > 0; i--) {
+    setShiftRegisterSum(*(this->getShiftRegisterPointer() + i));
+    *(this->getShiftRegisterPointer() + i) = *(this->getShiftRegisterPointer() + i - 1);
+  }
+  *(this->getShiftRegisterPointer()) = xn;
+  setShiftRegisterSum(*(this->getShiftRegisterPointer()));
+  return (this->getShiftRegisterSum() / (float)this->getBufferSize());
+}
+float* FilteredValue::getShiftRegisterPointer() {
+  return this->shiftRegister;
+}
+void FilteredValue::setBufferSize(int size) {
+  this->bufferSize = size;
+}
+int FilteredValue::getBufferSize() {
+  return bufferSize;
+}
+void FilteredValue::resetShiftRegisterSum(){
+  shiftRegisterSum = 0;
+}
+float FilteredValue::getShiftRegisterSum() {
+  return shiftRegisterSum;
+}
+void FilteredValue::setShiftRegisterSum(float val) {
+  shiftRegisterSum += val;
+}
+void FilteredValue::setShiftRegisterPointer(float* ptr) {
+  this->shiftRegister = ptr;
+}
+void FilteredValue::setShiftRegisterSize(int newSize) {
+  float* ptr = (float*)realloc(ptr, newSize * sizeof(float));
+  setShiftRegisterPointer(ptr);
+  setBufferSize(newSize);
+  initShiftRegister();
+}
+void FilteredValue::initShiftRegister() {
+  float* ptr = this->getShiftRegisterPointer();
+  int size = this->getBufferSize();
+  for (int i = 0; i < size; i++) {
+    *(ptr + i) = 0;
+  }
+}
+void FilteredValue::freeShiftRegister() {
+  float* ptr = this->getShiftRegisterPointer();
+  if (ptr != NULL) free(ptr);
+}
+void FilteredValue::doHPF(bool isActive) {
+  isHPF = isActive;
+}
+float FilteredValue::LPF() {
+  float yn = (1 - a_lpf) * xn + (a_lpf) * this->getOldValueLPF();
+  this->setOldValueLPF(yn);
   return yn;
 }
-void FilteredValue::setOldValueLPF1(float val) {
-  yn_1_lpf1 = val;
+void FilteredValue::setOldValueLPF(float val) {
+  yn_1_lpf = val;
 }
-float FilteredValue::getOldValueLPF1() {
-  return yn_1_lpf1;
+float FilteredValue::getOldValueLPF() {
+  return yn_1_lpf;
 }
-float FilteredValue::HPF1(){
+float FilteredValue::HPF() {
 
-  float bn = (a_hpf1) * xn + (1-a_hpf1)*this->getOldValueHPF1();
+  float bn = (a_hpf)*xn + (1 - a_hpf) * this->getOldValueHPF();
   float yn = xn - bn;
-  this->setOldValueHPF1(bn);
+  this->setOldValueHPF(bn);
   return yn;
 }
-void FilteredValue::setOldValueHPF1(float val){
-  bn_1 = val;
+void FilteredValue::setOldValueHPF(float val) {
+  bn_1_hpf = val;
 }
-float FilteredValue::getOldValueHPF1(){
-  return bn_1;
+float FilteredValue::getOldValueHPF() {
+  return bn_1_hpf;
 }
-
-

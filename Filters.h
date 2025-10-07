@@ -6,29 +6,54 @@
 class FilteredValue {
 public:
   float xn;
-  float lpf1;
-  float hpf1;
+  float lpf;
+  float hpf;
+  float floatingAverage;
 
   FilteredValue();
-  
-  void setLPF1Constant(float);
-  void setHPF1Constant(float);
+
+  void setLPFConstant(float);
+  void setHPFConstant(float);
+  void setShiftRegisterSize(int);
+
   void updateSample(float);
-  void doLPF1(bool);
-  void doHPF1(bool);
+
+  void doLPF(bool);
+  void doHPF(bool);
+  void doFloatingAverage(bool);
 
 private:
-  float yn_1_lpf1;
-  float a_lpf1;
-  float a_hpf1;
-  float bn_1;
-  bool isActivelpf1;
-  bool isActivehpf1;
-  float LPF1();
-  float HPF1();
-  void setOldValueHPF1(float);
-  float getOldValueHPF1();
-  void setOldValueLPF1(float);
-  float getOldValueLPF1();
+  float yn_1_lpf;
+  float a_lpf;
+  float a_hpf;
+  float bn_1_hpf;
+
+  float* shiftRegister;
+  float shiftRegisterSum;
+  int bufferSize;
+
+  bool isLPF;
+  bool isHPF;
+  bool isFloatingAverage;
+
+  float LPF();
+  float HPF();
+  float FloatingAverage();
+
+  void freeShiftRegister();
+  float* getShiftRegisterPointer();
+  int getBufferSize();
+  void initShiftRegister();
+  float getShiftRegisterSum();
+  void setShiftRegisterSum(float);
+  void resetShiftRegisterSum();
+  void setBufferSize(int);
+  void setShiftRegisterPointer(float*);
+
+  void setOldValueHPF(float);
+  float getOldValueHPF();
+
+  void setOldValueLPF(float);
+  float getOldValueLPF();
 };
 #endif
