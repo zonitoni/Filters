@@ -1,6 +1,10 @@
 # Filters
 header and cpp files for simple Filters for Arduino at RunTime
 
+Input: float xn;
+Ouputs: float lpf, hpf, floatingAverage;
+
+
 #LPF1
 simple Low Pass Filter 1. Order
 
